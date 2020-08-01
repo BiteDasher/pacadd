@@ -31,3 +31,6 @@ A simple tool for managing repositories
 5 - repo commented out \
 6 - file not exists \
 7 - repo not found
+
+# AUR git clone link:
+https://aur.archlinux.org/pacadd.git
