@@ -42,7 +42,7 @@ Usage: pacadd [options] NAME URL [options]
   	-a URL -ts			Adds Server=URL/\$repo/os/\$arch to $conf_i
   	-a URL -ts -i			Adds Server=URL/\$repo/os/\$arch to $conf_i or <path> (if declared)
   	-a NAME -s URL -i <path> -ts	Adds [NAME] and Include=<path> to $conf_f; Server=URL/\$repo/os/\$arch to $conf_i
-  -r, --remove NAME			Removes [NAME] from $conf_f and $conf_i
+  -r, --remove NAME			Removes [NAME] from $conf_f
   	-r -m URL			Removes Server=URL from $conf_i
   	-r -m URL <path>		Removes Server=URL from <path>
   -c, --comment NAME			Comment out the line of [NAME] from $conf_f
