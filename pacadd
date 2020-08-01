@@ -205,7 +205,9 @@ echo "error: invalid argument(s)"; exit 1; fi
 repo_name="$2"
 	if [ -z "$(sed "/^.*\#.*\[$repo_name\]/! d" $conf_f)" ]; then
 	echo "error: commented out repository $repo_name not found in $conf_f"; exit 7; fi
-lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -l)"
+if [[ -n $(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | tail -n 1) ]]; then
+lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d' | wc -l)"; else
+lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -l)"; fi
 sed "/^\$*.*\#.*\[$repo_name\]/,+$lines s/# *//" -i $conf_f
 ;;
 -c|--comment)
@@ -214,7 +216,9 @@ echo "error: invalid argument(s)"; exit 1; fi
 repo_name="$2"
 	if [ -z "$(sed "/^\$*\[$repo_name\]/! d" $conf_f)" ]; then
 	echo "error: uncommented repository $repo_name not found in $conf_f"; exit 7; fi
-lines="$(sed -n "/^\$*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -l)"
+if [[ -n $(sed -n "/^\$*\[$repo_name\]/,/^ *$/p" $conf_f | tail -n 1) ]]; then
+lines="$(sed -n "/^\$*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d' | wc -l)"; else
+lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -l)"; fi
 sed "/^\$*\[$repo_name\]/,+$lines s/^/#/" -i $conf_f
 ;;
 *)
