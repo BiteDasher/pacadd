@@ -1,5 +1,5 @@
 # pacadd
-A simple tool for managing repositories
+A simple tool for managing repositories in Arch Linux
 
 ## How-to use:
 
