@@ -33,7 +33,7 @@ if [[ "$repo_url" != *:*/* ]]; then echo "error: invalid address"; exit 3; fi
 case "$1" in
 -h|--help|help)
 cat <<__EOF__
-pacadd v1.0.4
+pacadd v1.0.4.1
 
 A simple tool for managing repositories
 
@@ -153,11 +153,10 @@ if [ "$#" == 4 ]; then
 else
 if [[ "$#" > 4 ]]; then
 	if [[ "$3" == "-s" || "$3" == "--server" ]] && [[ "$5" == "-i" || "$5" == "--include" ]]; then
-		if [ ! $6 ]; then echo "error: too few arguments: no file to include"; exit 1
+		if [ ! $6 ]; then end_file="/etc/pacman.d/mirrorlist"; else end_file="$6"
 		fi
 	repo_name="$2"
 	repo_url="$4"
-	end_file="$6"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 	check_addr
 			if [ "$(cat $end_file | grep -x $repo_url)" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
