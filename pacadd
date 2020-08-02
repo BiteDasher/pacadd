@@ -33,7 +33,7 @@ if [[ "$repo_url" != *:*/* ]]; then echo "error: invalid address"; exit 3; fi
 case "$1" in
 -h|--help|help)
 cat <<__EOF__
-pacadd v1.0.4.1
+pacadd v1.0.5
 
 A simple tool for managing repositories
 
@@ -77,14 +77,14 @@ if [ "$#" == 3 ]; then
 			if [ "$(echo $2 | rev | cut -c1)" == "/" ]; then
 			repo_url=${2::-1}
 			fi
-			if [ "$(cat $conf_i | grep -x $repo_url)" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
-			else echo "$repo_url/\$repo/os/\$arch" >> $conf_i
+			if [ "$(cat $conf_i | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+			else echo "Server = $repo_url/\$repo/os/\$arch" >> $conf_i
 			fi
 		fi
 	if [[ "$3" == "-i" || "$3" == "--include" ]]; then
 		if [[ "$2" == *:*/* ]]; then
-			if [ "$(cat $conf_i | grep -x $2)" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
-			else echo "$2" >> $conf_i
+			if [ "$(cat $conf_i | grep -x ".*Server = $2")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+			else echo "Server = $2" >> $conf_i
 			fi
 		else
 		repo_name="$2"
@@ -119,8 +119,8 @@ if [ "$#" == 4 ]; then
 	end_file="$4"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 		if [[ "$something" == *:*/* ]]; then
-			if [ "$(cat $end_file | grep -x $something)" ]; then echo "error: this mirror already exists in $end_file"; exit 2
-			else echo "$something" >> $end_file
+			if [ "$(cat $end_file | grep -x ".*Server = $something")" ]; then echo "error: this mirror already exists in $end_file"; exit 2
+			else echo "Server = $something" >> $end_file
 			fi
 		else
 		check_repo_x; check_repo_c
@@ -145,8 +145,8 @@ if [ "$#" == 4 ]; then
 			if [ "$(echo $repo_url | rev | cut -c1)" == "/" ]; then
 			repo_url=${repo_url::-1}; fi
 			_repo_url="$repo_url/\$repo/os/\$arch"
-		if [ "$(cat $conf_i | grep -x $_repo_url)" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
-		else echo "$repo_url/\$repo/os/\$arch" >> $conf_i
+		if [ "$(cat $conf_i | grep -x ".*Server = $_repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+		else echo "Server = $repo_url/\$repo/os/\$arch" >> $conf_i
 		fi
 	else
 	echo "error: unknown argument(s)"; exit 1; fi; fi; fi; fi; fi
@@ -159,11 +159,11 @@ if [[ "$#" > 4 ]]; then
 	repo_url="$4"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 	check_addr
-			if [ "$(cat $end_file | grep -x $repo_url)" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
+			if [ "$(cat $end_file | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
 	check_repo_x; check_repo_c
 	check_space
 	echo "[$repo_name]" >> $conf_f
-	echo "Server = $repo_name" >> $end_file
+	echo "Server = $repo_url" >> $end_file
 	echo "Include = $end_file" >> $conf_f
 	else
 	if [[ "$3" == "-s" || "$3" == "--server" ]] && [[ "$5" == "-i" || "$5" == "--include" ]] && [[ "$7" == "-ts" || "$7" == "--template-server" ]]; then	
@@ -175,7 +175,7 @@ if [[ "$#" > 4 ]]; then
 	end_file="$6"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 	check_addr
-			if [ "$(cat $end_file | grep -x $repo_url)" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
+			if [ "$(cat $end_file | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
 	check_repo_x; check_repo_c
 	check_space
 	echo "[$repo_name]" >> $conf_f
@@ -193,14 +193,20 @@ echo "error: invalid argument(s)"; exit 1; fi
 	echo "error: too few argument(s)"; exit 1; fi
 		if [ "$4" ]; then
 		if ! [ -f "$4" ]; then echo "error: file $4 not exists"; exit 6; fi
-		repo_url="$3"
+		_repo_url="$3"
 		end_file="$4"
-		repo_url="$(echo $repo_url | sed 's:/:\\/:g')"
-		sed "/.*${repo_url}/ d" -i $end_file
+		repo_url="$(echo $_repo_url | sed 's:/:\\/:g')"
+		if ! [[ "$(sed "/.*Server\ =\ $repo_url/! d" $end_file)" ]]; then
+			echo "error: server $_repo_url not found in $end_file"; exit 8
+		fi
+		sed "/.*Server = ${repo_url}/ d" -i $end_file
 		else
-		repo_url="$3"
-		repo_url="$(echo $repo_url | sed 's:/:\\/:g')"
-		sed "/.*${repo_url}/ d" -i $conf_i
+		_repo_url="$3"
+		repo_url="$(echo $_repo_url | sed 's:/:\\/:g')"
+		if ! [[ "$(sed "/.*Server\ =\ $repo_url/! d" $conf_i)" ]]; then
+			echo "error: repository $_repo_url not found in $conf_i"; exit 8
+		fi
+		sed "/.*Server = ${repo_url}/ d" -i $conf_i
 		fi
 	else
 	repo_name="$2"

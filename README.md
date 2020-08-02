@@ -41,7 +41,8 @@ A simple tool for managing repositories in Arch Linux
 4 - repo exists \
 5 - repo commented out \
 6 - file not exists \
-7 - repo not found
+7 - repo not found \
+8 - mirror not found
 
 # Echo codes at -c\_is\_\* functions:
 1-r - repo not(ok) ? \
