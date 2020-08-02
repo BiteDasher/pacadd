@@ -1,13 +1,16 @@
 #!/bin/bash
-## -i   = --include
-## -a   = --add
-## -ts  = --template-server
-## -s   = --server
-## -r   = --remove
-## -c   = --comment
-## -u   = --uncomment
-## -m	= --mirror
-## -l	= --list
+## -i   	= --include
+## -a   	= --add
+## -ts  	= --template-server
+## -s   	= --server
+## -r   	= --remove
+## -c   	= --comment
+## -u   	= --uncomment
+## -m		= --mirror
+## -l		= --list
+## -c_is_c	= --check_is_commented
+## -c_is_u	= --check_is_uncommented
+## -c_is_x	= --check_is_exists
 check_root() {
 [ "$(id -u)" != 0 ] && { echo "This script must be run as root" ; exit 1 ; }
 }
@@ -30,7 +33,7 @@ if [[ "$repo_url" != *:*/* ]]; then echo "error: invalid address"; exit 3; fi
 case "$1" in
 -h|--help|help)
 cat <<__EOF__
-pacadd v1.0.2
+pacadd v1.0.3
 
 A simple tool for managing repositories
 
@@ -51,6 +54,15 @@ Usage: pacadd [options] NAME URL [options]
   -c, --comment NAME			Comment out the line of [NAME] from $conf_f
   -u, --uncomment NAME			Uncomment the line of [NAME] from $conf_f
   -l, --list				Shows all available (uncommented) repositories at $conf_f
+  -c_is_c NAME (or) URL			Checks is [NAME] or Server=URL commented out at $conf_f
+  	-c_is_c URL -i			Checks is Server=URL commented out at $conf_i or <path> (if declared)
+  	/ --check_is_commented
+  -c_is_u NAME (or) URL			Checks is [NAME] or Server=URL uncommented at $conf_f
+  	-c_is_c URL -i			Checks is Server=URL commented out at $conf_i or <path> (if declared)
+  	/ --check_is_uncommented
+  -c_is_x NAME (or) URL			Checks is [NAME] or Server=URL exists at $conf_f
+  	-c_is_x URL -i			Checks is Server=URL exist at $conf_i or <path> (if declared)
+  	/ --check_is_exists
 
 __EOF__
 exit 0 ;;
@@ -231,6 +243,72 @@ sed "/^\$*\[$repo_name\]/,+$lines s/^/#/" -i $conf_f
 ;;
 -l|--list)
 sed "/^\$*\[.*\]/! d;/\[options\]/ d" $conf_f
+;;
+-c_is_c|--check_is_commented)
+if [[ ! "$2" ]]; then
+echo "error: invalid argument(s)"; exit 1; fi
+	if [[ "$3" == "-i" || "$3" == "--include" ]]; then
+		_included=1
+		if [[ ! "$4" ]]; then conf_i="/etc/pacman.d/mirrorlist"
+	else
+		if ! [ -f "$4" ]; then echo "error: file $4 not exists"; exit 6; fi
+		conf_i="$4"; fi
+	else _included=0; fi
+something="$2"
+	if [[ "$something" == *:*/* ]]; then
+		something="$(echo $something | sed 's:/:\\/:g')"
+		if [ "$_included" == 1 ]; then
+		[[ "$(sed "/^.*\#.*Server\ =\ $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		else	
+		[[ "$(sed "/^.*\#.*Server\ =\ $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		fi
+	else
+		[[ "$(sed "/^.*\#.*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
+	fi
+;;
+-c_is_u|--check_is_uncommented)
+if [[ ! "$2" ]]; then
+echo "error: invalid argument(s)"; exit 1; fi
+	if [[ "$3" == "-i" || "$3" == "--include" ]]; then
+		_included=1
+		if [[ ! "$4" ]]; then conf_i="/etc/pacman.d/mirrorlist"
+	else
+		if ! [ -f "$4" ]; then echo "error: file $4 not exists"; exit 6; fi
+		conf_i="$4"; fi
+	else _included=0; fi
+something="$2"
+	if [[ "$something" == *:*/* ]]; then
+		something="$(echo $something | sed 's:/:\\/:g')"
+		if [ "$_included" == 1 ]; then
+		[[ "$(sed "/^\$*Server\ =\ $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		else	
+		[[ "$(sed "/^\$*Server\ =\ $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		fi
+	else
+		[[ "$(sed "/^\$*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
+	fi
+;;
+-c_is_x|--check_is_exists)
+if [[ ! "$2" ]]; then
+echo "error: invalid argument(s)"; exit 1; fi
+	if [[ "$3" == "-i" || "$3" == "--include" ]]; then
+		_included=1
+		if [[ ! "$4" ]]; then conf_i="/etc/pacman.d/mirrorlist"
+	else
+		if ! [ -f "$4" ]; then echo "error: file $4 not exists"; exit 6; fi
+		conf_i="$4"; fi
+	else _included=0; fi
+something="$2"
+	if [[ "$something" == *:*/* ]]; then
+		something="$(echo $something | sed 's:/:\\/:g')"
+		if [ "$_included" == 1 ]; then
+		[[ "$(sed "/.*Server = $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		else	
+		[[ "$(sed "/.*Server = $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		fi
+	else
+		[[ "$(sed "/.*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
+	fi
 ;;
 *)
 echo "error: unknown argemunt"; exit 1
