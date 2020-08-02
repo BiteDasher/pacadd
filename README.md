@@ -3,7 +3,7 @@ A simple tool for managing repositories in Arch Linux
 
 ## How-to use:
 
-**sudo pacadd -h**
+**pacadd -h**
 
 ## Usage: pacadd [options] NAME URL [options]
 ```
@@ -22,6 +22,15 @@ A simple tool for managing repositories in Arch Linux
   -c, --comment NAME			Comment out the line of [NAME] from /etc/pacman.conf
   -u, --uncomment NAME			Uncomment the line of [NAME] from /etc/pacman.conf
   -l, --list				Shows all available (uncommented) repositories at /etc/pacman.conf
+  -c_is_c NAME (or) URL			Checks is [NAME] or Server=URL commented out at /etc/pacman.conf
+  	-c_is_c URL -i			Checks is Server=URL commented out at /etc/pacman.d/mirrorlist or <path> (if declared)
+  	/ --check_is_commented
+  -c_is_u NAME (or) URL			Checks is [NAME] or Server=URL uncommented at /etc/pacman.conf
+  	-c_is_c URL -i			Checks is Server=URL commented out at /etc/pacman.d/mirrorlist or <path> (if declared)
+  	/ --check_is_uncommented
+  -c_is_x NAME (or) URL			Checks is [NAME] or Server=URL exists at /etc/pacman.conf
+  	-c_is_x URL -i			Checks is Server=URL exist at /etc/pacman.d/mirrorlist or <path> (if declared)
+  	/ --check_is_exists
   ```
 
 # Exit codes:
@@ -32,6 +41,12 @@ A simple tool for managing repositories in Arch Linux
 5 - repo commented out \
 6 - file not exists \
 7 - repo not found
+
+# Echo codes at -c\_is\_\* functions:
+1-r - repo not(ok) ? \
+1-u - url not(ok) ? \
+0-r - repo is(ok) ? \
+0-u - url is(ok) ?
 
 # AUR git clone link:
 https://aur.archlinux.org/pacadd.git
