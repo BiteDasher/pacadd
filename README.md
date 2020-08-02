@@ -21,10 +21,11 @@ A simple tool for managing repositories in Arch Linux
   	-r -m URL <path>		Removes Server=URL from <path>
   -c, --comment NAME			Comment out the line of [NAME] from /etc/pacman.conf
   -u, --uncomment NAME			Uncomment the line of [NAME] from /etc/pacman.conf
+  -l, --list				Shows all available (uncommented) repositories at /etc/pacman.conf
   ```
 
 # Exit codes:
-1 - invalid argument(s) \
+1 - invalid argument(s) / script executed not as UID 0 \
 2 - mirror exists \
 3 - invalid address \
 4 - repo exists \
