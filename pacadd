@@ -30,7 +30,7 @@ if [[ "$repo_url" != *:*/* ]]; then echo "error: invalid address"; exit 3; fi
 case "$1" in
 -h|--help|help)
 cat <<__EOF__
-pacadd v1.0.1
+pacadd v1.0.2
 
 A simple tool for managing repositories
 
