@@ -7,7 +7,10 @@
 ## -c   = --comment
 ## -u   = --uncomment
 ## -m	= --mirror
+## -l	= --list
+check_root() {
 [ "$(id -u)" != 0 ] && { echo "This script must be run as root" ; exit 1 ; }
+}
 conf_f=/etc/pacman.conf
 conf_i=/etc/pacman.d/mirrorlist
 check_repo_x() {
@@ -47,10 +50,12 @@ Usage: pacadd [options] NAME URL [options]
   	-r -m URL <path>		Removes Server=URL from <path>
   -c, --comment NAME			Comment out the line of [NAME] from $conf_f
   -u, --uncomment NAME			Uncomment the line of [NAME] from $conf_f
+  -l, --list				Shows all available (uncommented) repositories at $conf_f
 
 __EOF__
 exit 0 ;;
 -a|--add)
+check_root
 if [[ "$(echo $2 | cut -c1)" == "-" || ! "$2" ]]; then
 echo "error: invalid argument(s)"; exit 1; fi
 if [ "$#" == 3 ]; then
@@ -169,6 +174,7 @@ else
 echo "error: unknown argument(s)"; exit 1; fi; fi; fi; fi
 ;;
 -r|--remove)
+check_root
 if [[ ! "$2" ]]; then
 echo "error: invalid argument(s)"; exit 1; fi
 	if [[ "$2" != "-m" || "$2" != "--mirror" ]]; then
@@ -200,6 +206,7 @@ echo "error: invalid argument(s)"; exit 1; fi
 	fi
 ;;
 -u|--uncomment)
+check_root
 if [[ ! "$2" ]]; then
 echo "error: invalid argument(s)"; exit 1; fi
 repo_name="$2"
@@ -211,6 +218,7 @@ lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -
 sed "/^\$*.*\#.*\[$repo_name\]/,+$lines s/# *//" -i $conf_f
 ;;
 -c|--comment)
+check_root
 if [[ ! "$2" ]]; then
 echo "error: invalid argument(s)"; exit 1; fi
 repo_name="$2"
@@ -220,6 +228,9 @@ if [[ -n $(sed -n "/^\$*\[$repo_name\]/,/^ *$/p" $conf_f | tail -n 1) ]]; then
 lines="$(sed -n "/^\$*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d' | wc -l)"; else
 lines="$(sed -n "/^.*\#.*\[$repo_name\]/,/^ *$/p" $conf_f | sed '1 d;$ d' | wc -l)"; fi
 sed "/^\$*\[$repo_name\]/,+$lines s/^/#/" -i $conf_f
+;;
+-l|--list)
+sed "/^\$*\[.*\]/! d;/\[options\]/ d" $conf_f
 ;;
 *)
 echo "error: unknown argemunt"; exit 1
