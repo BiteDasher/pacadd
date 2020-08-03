@@ -77,13 +77,13 @@ if [ "$#" == 3 ]; then
 			if [ "$(echo $2 | rev | cut -c1)" == "/" ]; then
 			repo_url=${2::-1}
 			fi
-			if [ "$(cat $conf_i | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+			if [ "$(cat $conf_i | grep -x ".*Server[ \t]=[ \t]$repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
 			else echo "Server = $repo_url/\$repo/os/\$arch" >> $conf_i
 			fi
 		fi
 	if [[ "$3" == "-i" || "$3" == "--include" ]]; then
 		if [[ "$2" == *:*/* ]]; then
-			if [ "$(cat $conf_i | grep -x ".*Server = $2")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+			if [ "$(cat $conf_i | grep -x ".*Server[ \t]=[ \t]$2")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
 			else echo "Server = $2" >> $conf_i
 			fi
 		else
@@ -119,7 +119,7 @@ if [ "$#" == 4 ]; then
 	end_file="$4"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 		if [[ "$something" == *:*/* ]]; then
-			if [ "$(cat $end_file | grep -x ".*Server = $something")" ]; then echo "error: this mirror already exists in $end_file"; exit 2
+			if [ "$(cat $end_file | grep -x ".*Server[ \t]=[ \t]$something")" ]; then echo "error: this mirror already exists in $end_file"; exit 2
 			else echo "Server = $something" >> $end_file
 			fi
 		else
@@ -145,7 +145,7 @@ if [ "$#" == 4 ]; then
 			if [ "$(echo $repo_url | rev | cut -c1)" == "/" ]; then
 			repo_url=${repo_url::-1}; fi
 			_repo_url="$repo_url/\$repo/os/\$arch"
-		if [ "$(cat $conf_i | grep -x ".*Server = $_repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
+		if [ "$(cat $conf_i | grep -x ".*Server[ \t]=[ \t]$_repo_url")" ]; then echo "error: this mirror already exists in $conf_i"; exit 2
 		else echo "Server = $repo_url/\$repo/os/\$arch" >> $conf_i
 		fi
 	else
@@ -159,7 +159,7 @@ if [[ "$#" > 4 ]]; then
 	repo_url="$4"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 	check_addr
-			if [ "$(cat $end_file | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
+			if [ "$(cat $end_file | grep -x ".*Server[ \t]=[ \t]$repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
 	check_repo_x; check_repo_c
 	check_space
 	echo "[$repo_name]" >> $conf_f
@@ -175,7 +175,7 @@ if [[ "$#" > 4 ]]; then
 	end_file="$6"
 			if [[ ! -f "$end_file" ]]; then echo "error: file $end_file not exists"; exit 6; fi
 	check_addr
-			if [ "$(cat $end_file | grep -x ".*Server = $repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
+			if [ "$(cat $end_file | grep -x ".*Server[ \t]=[ \t]$repo_url")" ]; then echo "error: this mirror already exists in $end_file"; exit 2; fi
 	check_repo_x; check_repo_c
 	check_space
 	echo "[$repo_name]" >> $conf_f
@@ -196,17 +196,17 @@ echo "error: invalid argument(s)"; exit 1; fi
 		_repo_url="$3"
 		end_file="$4"
 		repo_url="$(echo $_repo_url | sed 's:/:\\/:g')"
-		if ! [[ "$(sed "/.*Server\ =\ $repo_url/! d" $end_file)" ]]; then
+		if ! [[ "$(sed "/.*Server[ \t]=[ \t]$repo_url/! d" $end_file)" ]]; then
 			echo "error: server $_repo_url not found in $end_file"; exit 8
 		fi
-		sed "/.*Server = ${repo_url}/ d" -i $end_file
+		sed "/.*Server[ \t]=[ \t]${repo_url}/ d" -i $end_file
 		else
 		_repo_url="$3"
 		repo_url="$(echo $_repo_url | sed 's:/:\\/:g')"
-		if ! [[ "$(sed "/.*Server\ =\ $repo_url/! d" $conf_i)" ]]; then
+		if ! [[ "$(sed "/.*Server[ \t]=[ \t]$repo_url/! d" $conf_i)" ]]; then
 			echo "error: repository $_repo_url not found in $conf_i"; exit 8
 		fi
-		sed "/.*Server = ${repo_url}/ d" -i $conf_i
+		sed "/.*Server[ \t]=[ \t]${repo_url}/ d" -i $conf_i
 		fi
 	else
 	repo_name="$2"
@@ -265,9 +265,9 @@ something="$2"
 	if [[ "$something" == *:*/* ]]; then
 		something="$(echo $something | sed 's:/:\\/:g')"
 		if [ "$_included" == 1 ]; then
-		[[ "$(sed "/^.*\#.*Server\ =\ $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/^.*\#.*Server[ \t]=[ \t]$something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		else	
-		[[ "$(sed "/^.*\#.*Server\ =\ $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/^.*\#.*Server[ \t]=[ \t]$something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		fi
 	else
 		[[ "$(sed "/^.*\#.*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
@@ -287,9 +287,9 @@ something="$2"
 	if [[ "$something" == *:*/* ]]; then
 		something="$(echo $something | sed 's:/:\\/:g')"
 		if [ "$_included" == 1 ]; then
-		[[ "$(sed "/^\$*Server\ =\ $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/^\$*Server[ \t]=[ \t]$something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		else	
-		[[ "$(sed "/^\$*Server\ =\ $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/^\$*Server[ \t]=[ \t]$something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		fi
 	else
 		[[ "$(sed "/^\$*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
@@ -309,9 +309,9 @@ something="$2"
 	if [[ "$something" == *:*/* ]]; then
 		something="$(echo $something | sed 's:/:\\/:g')"
 		if [ "$_included" == 1 ]; then
-		[[ "$(sed "/.*Server = $something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/.*Server[ \t]=[ \t]$something/! d" $conf_i)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		else	
-		[[ "$(sed "/.*Server = $something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
+		[[ "$(sed "/.*Server[ \t]=[ \t]$something/! d" $conf_f)" ]] && echo 0-u || { echo 1-u ; exit 1 ; }
 		fi
 	else
 		[[ "$(sed "/.*\[$something\]/! d" $conf_f)" ]] && echo 0-r || { echo 1-r ; exit 1 ; }
